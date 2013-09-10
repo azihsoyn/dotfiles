@@ -12,6 +12,10 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 " Recommended to install
 " After install, turn shell ~/.vim/bundle/vimproc, (n,g)make -f your_machines_makefile
 NeoBundle 'Shougo/vimproc'
+NeoBundle 'Shougo/unite.vim'
+NeoBundle 'ujihisa/unite-colorscheme'
+" for js input
+NeoBundle 'pangloss/vim-javascript'
 
 " My Bundles here:
 "
@@ -38,6 +42,12 @@ NeoBundle 'git://git.wincent.com/command-t.git'
 " Non git repos
 NeoBundle 'http://svn.macports.org/repository/macports/contrib/mpvim/'
 NeoBundle 'https://bitbucket.org/ns9tks/vim-fuzzyfinder'
+
+" color scheme
+NeoBundle 'altercation/solarized'
+
+" for ag
+NeoBundle 'rking/ag.vim'
 
 " ...
 
@@ -260,3 +270,27 @@ let g:gitgutter_sign_modified = '➜'
 let g:gitgutter_sign_removed = '✘'
 
 autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g`\"" | endif
+
+" ウィンドウを閉じずにバッファを閉じる
+command! Ebd call EBufdelete()
+function! EBufdelete()
+  let l:currentBufNum = bufnr("%")
+  let l:alternateBufNum = bufnr("#")
+
+  if buflisted(l:alternateBufNum)
+    buffer #
+  else
+    bnext
+  endif
+
+  if buflisted(l:currentBufNum)
+    execute "silent bwipeout".l:currentBufNum
+    " bwipeoutに失敗した場合はウインドウ上のバッファを復元
+    if bufloaded(l:currentBufNum) != 0
+      execute "buffer " . l:currentBufNum
+    endif
+  endif
+endfunction
+map <C-D><C-D> :Ebd<CR><Esc>:Unite buffer<CR>
+map <silent><C-F> :Unite file<CR>
+map <silent><C-L> :Unite buffer<CR>
