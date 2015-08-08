@@ -89,8 +89,6 @@ elseif neobundle#is_installed('neocomplcache')
 endif
 inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
-
-
 "NeoBundle 'ervandew/supertab'
 " SuperTab
 "let g:SuperTabDefaultCompletionType = "context"
@@ -396,9 +394,9 @@ set path+=$GOPATH/src/**
 let g:syntastic_go_checkers = ['go', 'golint', 'govet']
 set rtp+=$GOPATH/src/github.com/golang/lint/misc/vim
 autocmd BufWritePost,FileWritePost *.go execute 'Lint' | bel cw
+
 let g:gofmt_command = 'goimports'
 au BufWritePre *.go Fmt
 au BufNewFile,BufRead *.go set sw=4 noexpandtab ts=4 completeopt=menu,preview
 au FileType go set makeprg=go\ build
 " }}}
-
