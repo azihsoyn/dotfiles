@@ -22,6 +22,7 @@ NeoBundle 'pangloss/vim-javascript'
 " Note: You don't set neobundle setting in .gvimrc!
 " Original repos on github
 NeoBundle 'tpope/vim-fugitive'
+NeoBundle 'https://github.com/gregsexton/gitv.git'
 NeoBundle 'Lokaltog/vim-easymotion'
 NeoBundle 'rstacruz/sparkup', {'rtp': 'vim/'}
 NeoBundle 'itchyny/lightline.vim'
@@ -33,6 +34,9 @@ NeoBundle 'FuzzyFinder'
 NeoBundle 'rails.vim'
 NeoBundle 'savevers.vim'
 NeoBundle 'Align'
+NeoBundle 'sakuraiyuta/commentout.vim'
+" bench for vimrc
+NeoBundle 'mattn/benchvimrc-vim'
 " Non github repos
 NeoBundle 'git://git.wincent.com/command-t.git'
 " gist repos
@@ -41,16 +45,59 @@ NeoBundle 'git://git.wincent.com/command-t.git'
 "	\ 'script_type': 'plugin'}
 " Non git repos
 NeoBundle 'http://svn.macports.org/repository/macports/contrib/mpvim/'
-NeoBundle 'https://bitbucket.org/ns9tks/vim-fuzzyfinder'
+"NeoBundle 'https://bitbucket.org/ns9tks/vim-fuzzyfinder'
 
-" color scheme
 NeoBundle 'altercation/solarized'
+NeoBundle 'altercation/vim-colors-solarized'
+
+NeoBundle 'Shougo/vimfiler'
+NeoBundle 'https://github.com/sjl/gundo.vim.git'
+NeoBundle 'https://github.com/scrooloose/nerdtree.git'
+NeoBundle 'https://github.com/google/vim-ft-go'
+NeoBundle 'vim-jp/vim-go-extra'
+
+NeoBundle 'majutsushi/tagbar'
+NeoBundle 'dgryski/vim-godef'
+
+NeoBundle 'scrooloose/syntastic'
 
 " for ag
 NeoBundle 'rking/ag.vim'
 
-" ...
+NeoBundle has('lua') ? 'Shougo/neocomplete' : 'Shougo/neocomplcache'
+if neobundle#is_installed('neocomplete')
+    " neocomplete用設定
+    let g:neocomplete#enable_at_startup = 1
+    let g:neocomplete#enable_ignore_case = 1
+    let g:neocomplete#enable_smart_case = 1
+    if !exists('g:neocomplete#keyword_patterns')
+        let g:neocomplete#keyword_patterns = {}
+    endif
+    let g:neocomplete#keyword_patterns._ = '\h\w*'
+	let g:neocomplete#enable_auto_close_preview = 0
+elseif neobundle#is_installed('neocomplcache')
+    " neocomplcache用設定
+    let g:neocomplcache_enable_at_startup = 1
+    let g:neocomplcache_enable_ignore_case = 1
+    let g:neocomplcache_enable_smart_case = 1
+    if !exists('g:neocomplcache_keyword_patterns')
+        let g:neocomplcache_keyword_patterns = {}
+    endif
+    let g:neocomplcache_keyword_patterns._ = '\h\w*'
+    let g:neocomplcache_enable_camel_case_completion = 1
+    let g:neocomplcache_enable_underbar_completion = 1
+endif
+inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
 
+
+"NeoBundle 'ervandew/supertab'
+" SuperTab
+"let g:SuperTabDefaultCompletionType = "context"
+
+" ...
+set rtp^=$GOROOT/misc/vim
+set rtp^=$GOPATH/src/github.com/nsf/gocode/vim
 filetype plugin indent on     " Required!
 "
 " Brief help
@@ -71,7 +118,6 @@ vmap <C-c> y:call system("pbcopy", getreg("\""))<CR>
 nmap <Space><C-v> :call setreg("\"",system("pbpaste"))<CR>p
 
 " colorschme
-:colorscheme ron
 
 " for savevers.vim
 set patchmode=.bak
@@ -190,15 +236,15 @@ if exists('&ambiwidth')
 endif
 
 " vim -b : edit binary using xxd-format!
-augroup Binary  
+augroup Binary
 au!
-au BufReadPre  *.so,*.bin let &bin=1  
-au BufReadPost *.so,*.bin if &bin | %!xxd   
-au BufReadPost *.so,*.bin set ft=xxd | endif 
+au BufReadPre  *.so,*.bin let &bin=1
+au BufReadPost *.so,*.bin if &bin | %!xxd
+au BufReadPost *.so,*.bin set ft=xxd | endif
 au BufWritePre *.so,*.bin if &bin | %!xxd -r
 au BufWritePre *.so,*.bin endif
-au BufWritePost *.so,*.bin if &bin | %!xxd 
-au BufWritePost *.so,*.bin set nomod | endif 
+au BufWritePost *.so,*.bin if &bin | %!xxd
+au BufWritePost *.so,*.bin set nomod | endif
 augroup END
 
 " for lightline
@@ -219,8 +265,8 @@ let g:lightline = {
       \   'fileencoding': 'MyFileencoding',
       \   'mode': 'MyMode',
       \ },
-      \ 'separator': { 'left': '', 'right': '' },
-      \ 'subseparator': { 'left': '', 'right': '' }
+      \ 'separator': {'left': '⮀', 'right': '⮂'},
+      \ 'subseparator': {'left': '⮁', 'right': '⮃'}
       \ }
 
 function! MyModified()
@@ -228,13 +274,13 @@ function! MyModified()
 endfunction
 
 function! MyReadonly()
-  return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? '🔒 ' : ''
+  return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? '⭤' : ''
 endfunction
 
 function! MyFilename()
   return ('' != MyReadonly() ? MyReadonly() . ' ' : '') .
-        \ (&ft == 'vimfiler' ? vimfiler#get_status_string() : 
-        \  &ft == 'unite' ? unite#get_status_string() : 
+        \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
+        \  &ft == 'unite' ? unite#get_status_string() :
         \  &ft == 'vimshell' ? vimshell#get_status_string() :
         \ '' != expand('%:t') ? expand('%:t') : '[No Name]') .
         \ ('' != MyModified() ? ' ' . MyModified() : '')
@@ -243,7 +289,7 @@ endfunction
 function! MyFugitive()
   if &ft !~? 'vimfiler\|gundo' && exists("*fugitive#head")
     let _ = fugitive#head()
-    return strlen(_) ? ' '._ : ''
+    return strlen(_) ? '⭠ '._ : ''
   endif
   return ''
 endfunction
@@ -294,3 +340,65 @@ endfunction
 map <C-D><C-D> :Ebd<CR><Esc>:Unite buffer<CR>
 map <silent><C-F> :Unite file<CR>
 map <silent><C-L> :Unite buffer<CR>
+
+" color scheme
+set background=dark
+:colorscheme solarized
+
+" persistent undo
+set undodir=~/.vim/undodir
+set undofile
+set undolevels=5000 "maximum number of changes that can be undone
+set undoreload=10000 "maximum number lines to save for undo on a buffer reload
+
+autocmd FileType go :highlight goErr cterm=bold ctermfg=214
+autocmd FileType go :match goErr /\<err\>/
+
+nmap <F12> :TagbarToggle<CR>:VimFilerTree<CR>
+nmap <F10> :NERDTreeToggle<CR>:GundoToggle<CR>
+
+" for gundo
+let g:gundo_right = 1
+
+" VimFilerTree {{{
+command! VimFilerTree call VimFilerTree()
+function VimFilerTree()
+    exec ':VimFiler -buffer-name=explorer -split -simple -winwidth=45 -toggle -no-quit'
+    wincmd t
+    setl winfixwidth
+endfunction
+
+autocmd! FileType vimfiler call g:My_vimfiler_settings()
+
+function! g:My_vimfiler_settings()
+    nmap     <buffer><expr><CR> vimfiler#smart_cursor_map("\<Plug>(vimfiler_expand_tree)", "\<Plug>(vimfiler_edit_file)")
+    nnoremap <buffer>s          :call vimfiler#mappings#do_action('my_split')<CR>
+    nnoremap <buffer>v          :call vimfiler#mappings#do_action('my_vsplit')<CR>
+endfunction
+
+let my_action = {'is_selectable' : 1}
+function! my_action.func(candidates)
+    wincmd p
+    exec 'split '. a:candidates[0].action__path
+endfunction
+call unite#custom_action('file', 'my_split', my_action)
+
+let my_action = {'is_selectable' : 1}
+function! my_action.func(candidates)
+    wincmd p
+    exec 'vsplit '. a:candidates[0].action__path
+endfunction
+call unite#custom_action('file', 'my_vsplit', my_action)
+" }}}
+
+" for golang {{{
+set path+=$GOPATH/src/**
+let g:syntastic_go_checkers = ['go', 'golint', 'govet']
+set rtp+=$GOPATH/src/github.com/golang/lint/misc/vim
+autocmd BufWritePost,FileWritePost *.go execute 'Lint' | bel cw
+let g:gofmt_command = 'goimports'
+au BufWritePre *.go Fmt
+au BufNewFile,BufRead *.go set sw=4 noexpandtab ts=4 completeopt=menu,preview
+au FileType go set makeprg=go\ build
+" }}}
+
