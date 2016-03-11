@@ -1,10 +1,20 @@
 set nocompatible               " Be iMproved
 
 if has('vim_starting')
-set runtimepath+=~/.vim/bundle/neobundle.vim/
+  if &compatible
+    set nocompatible               " Be iMproved
+  endif
+
+  " Required:
+  set runtimepath+=~/.vim/bundle/neobundle.vim/
 endif
 
-call neobundle#rc(expand('~/.vim/bundle/'))
+" Required:
+call neobundle#begin(expand('~/.vim/bundle/'))
+
+" Let NeoBundle manage NeoBundle
+" Required:
+NeoBundleFetch 'Shougo/neobundle.vim'
 
 " Let NeoBundle manage NeoBundle
 NeoBundleFetch 'Shougo/neobundle.vim'
@@ -16,6 +26,9 @@ NeoBundle 'Shougo/unite.vim'
 NeoBundle 'ujihisa/unite-colorscheme'
 " for js input
 NeoBundle 'pangloss/vim-javascript'
+
+" for buffer replace
+NeoBundle 'thinca/vim-qfreplace'
 
 " My Bundles here:
 "
@@ -58,6 +71,7 @@ NeoBundle 'vim-jp/vim-go-extra'
 
 NeoBundle 'majutsushi/tagbar'
 NeoBundle 'dgryski/vim-godef'
+"NeoBundle 'https://github.com/fatih/vim-go'
 
 NeoBundle 'scrooloose/syntastic'
 
@@ -65,6 +79,12 @@ NeoBundle 'scrooloose/syntastic'
 NeoBundle 'rking/ag.vim'
 
 NeoBundle has('lua') ? 'Shougo/neocomplete' : 'Shougo/neocomplcache'
+" My Bundles here:
+" Refer to |:NeoBundle-examples|.
+" Note: You don't set neobundle setting in .gvimrc!
+
+call neobundle#end()
+
 if neobundle#is_installed('neocomplete')
     " neocomplete用設定
     let g:neocomplete#enable_at_startup = 1
@@ -139,7 +159,32 @@ nmap <silent> <F6> :VersDiff +<CR>
 " <F8>でVersDiffから抜ける
 nmap <silent> <F8> :VersDiff -c<CR>
 
+"" insert modeで開始
+"let g:unite_enable_start_insert = 1
+"
+"" 大文字小文字を区別しない
+"let g:unite_enable_ignore_case = 1
+"let g:unite_enable_smart_case = 1
+"
+"" grep検索
+"nnoremap <silent> ,g  :<C-u>Unite grep:. -buffer-name=search-buffer<CR>
+"
+"" カーソル位置の単語をgrep検索
+"nnoremap <silent> ,cg :<C-u>Unite grep:. -buffer-name=search-buffer<CR><C-R><C-W>
+"
+"" grep検索結果の再呼出
+"nnoremap <silent> ,r  :<C-u>UniteResume search-buffer<CR>
+"
+" unite-grepのバックエンドをagに切り替える
+if executable('ag')
+  set grepprg=ag\ -a
+"  let g:unite_source_grep_command = 'ag'
+"  let g:unite_source_grep_default_opts = '--nocolor --nogroup'
+"  let g:unite_source_grep_recursive_opt = ''
+endif
+
 set backup
+set hidden " バッファを閉じる代わりに隠す（Undo履歴を残すため）
 set foldmethod=marker
 set runtimepath+=/home/nyoshiza/.vim
 set incsearch
@@ -312,6 +357,7 @@ endfunction
 let g:gitgutter_sign_added = '✚'
 let g:gitgutter_sign_modified = '➜'
 let g:gitgutter_sign_removed = '✘'
+let g:gitgutter_max_signs = 2000
 
 autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g`\"" | endif
 
@@ -352,8 +398,15 @@ set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 autocmd FileType go :highlight goErr cterm=bold ctermfg=214
 autocmd FileType go :match goErr /\<err\>/
 
-nmap <F12> :TagbarToggle<CR>:VimFilerTree<CR>
+nmap <F12> :IDE<CR>
 nmap <F10> :NERDTreeToggle<CR>:GundoToggle<CR>
+
+"IDE
+command! IDE call IDE()
+function IDE()
+	exec ':TagbarToggle'
+	exec ':VimFilerTree'
+endfunction
 
 " for gundo
 let g:gundo_right = 1
@@ -363,7 +416,6 @@ command! VimFilerTree call VimFilerTree()
 function VimFilerTree()
     exec ':VimFiler -buffer-name=explorer -split -simple -winwidth=45 -toggle -no-quit'
     wincmd t
-    setl winfixwidth
 endfunction
 
 autocmd! FileType vimfiler call g:My_vimfiler_settings()
@@ -393,7 +445,8 @@ call unite#custom_action('file', 'my_vsplit', my_action)
 set path+=$GOPATH/src/**
 let g:syntastic_go_checkers = ['go', 'golint', 'govet']
 set rtp+=$GOPATH/src/github.com/golang/lint/misc/vim
-autocmd BufWritePost,FileWritePost *.go execute 'Lint' | bel cw
+" ちょっと鬱陶しいのでコメントアウト
+"autocmd BufWritePost,FileWritePost *.go execute 'Lint' | bel cw
 
 let g:gofmt_command = 'goimports'
 au BufWritePre *.go Fmt
